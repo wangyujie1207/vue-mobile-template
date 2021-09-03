@@ -14,15 +14,12 @@ class CHRequest {
   loading?: ComponentInstance
 
   constructor (config: CHRequestConfig) {
-    // 创建axios实例
     this.instance = axios.create(config)
 
     // 保存基本信息
     this.showLoading = config.showLoading ?? DEFAULT_LOADING
     this.interceptors = config.interceptors
 
-    // 使用拦截器
-    // 1.从config中取出的拦截器是对应的实例的拦截器
     this.instance.interceptors.request.use(
       this.interceptors?.requestInterceptor,
       this.interceptors?.requestInterceptorCatch
@@ -32,7 +29,7 @@ class CHRequest {
       this.interceptors?.responseInterceptorCatch
     )
 
-    // 2.添加所有的实例都有的拦截器
+    // 总拦截
     this.instance.interceptors.request.use(
       (config) => {
         if (this.showLoading) {
@@ -47,22 +44,20 @@ class CHRequest {
 
     this.instance.interceptors.response.use(
       (res) => {
-        // 将loading移除
+        // loading移除
         // eslint-disable-next-line no-unused-expressions
         this.loading?.clear()
         const data = res.data
-        if (data.returnCode === '-1001') {
+        if (data.code === '-1001') {
           console.log('请求失败~, 错误信息')
         } else {
           return data
         }
       },
       (err) => {
-        // 将loading移除
+        // loading移除
         // eslint-disable-next-line no-unused-expressions
         this.loading?.close()
-
-        // 例子: 判断不同的HttpErrorCode显示不同的错误信息
         if (err.response.status === 404) {
           console.log('404的错误~')
         }
@@ -73,12 +68,11 @@ class CHRequest {
 
   request<T = any> (config: CHRequestConfig<T>): Promise<T> {
     return new Promise((resolve, reject) => {
-      // 1.单个请求对请求config的处理
+      // 单个请求对请求config的处理
       if (config.interceptors?.requestInterceptor) {
         config = config.interceptors.requestInterceptor(config)
       }
 
-      // 2.判断是否需要显示loading
       if (config.showLoading === false) {
         this.showLoading = config.showLoading
       }
@@ -90,14 +84,13 @@ class CHRequest {
           if (config.interceptors?.responseInterceptor) {
             res = config.interceptors.responseInterceptor(res)
           }
-          // 2.将showLoading设置true, 这样不会影响下一个请求
+          // 2.将showLoading设置true, 不影响下一个请求
           this.showLoading = DEFAULT_LOADING
 
-          // 3.将结果resolve返回出去
           resolve(res)
         })
         .catch((err) => {
-          // 将showLoading设置true, 这样不会影响下一个请求
+          // 将showLoading设置true, 不影响下一个请求
           this.showLoading = DEFAULT_LOADING
           reject(err)
           return err
