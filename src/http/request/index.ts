@@ -1,24 +1,24 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
-import type { HYRequestInterceptors, HYRequestConfig } from './type'
+import type { CHRequestInterceptors, CHRequestConfig } from './type'
 
-import { ElLoading } from 'element-plus'
-import { ILoadingInstance } from 'element-plus/lib/el-loading/src/loading.type'
+import { showLoading } from '@/utils/toast'
+import { ComponentInstance } from 'vant/lib/utils'
 
-const DEAFULT_LOADING = true
+const DEFAULT_LOADING = true
 
-class HYRequest {
+class CHRequest {
   instance: AxiosInstance
-  interceptors?: HYRequestInterceptors
+  interceptors?: CHRequestInterceptors
   showLoading: boolean
-  loading?: ILoadingInstance
+  loading?: ComponentInstance
 
-  constructor(config: HYRequestConfig) {
+  constructor (config: CHRequestConfig) {
     // 创建axios实例
     this.instance = axios.create(config)
 
     // 保存基本信息
-    this.showLoading = config.showLoading ?? DEAFULT_LOADING
+    this.showLoading = config.showLoading ?? DEFAULT_LOADING
     this.interceptors = config.interceptors
 
     // 使用拦截器
@@ -36,11 +36,7 @@ class HYRequest {
     this.instance.interceptors.request.use(
       (config) => {
         if (this.showLoading) {
-          this.loading = ElLoading.service({
-            lock: true,
-            text: '正在请求数据....',
-            background: 'rgba(0, 0, 0, 0.5)'
-          })
+          this.loading = showLoading()
         }
         return config
       },
@@ -52,8 +48,8 @@ class HYRequest {
     this.instance.interceptors.response.use(
       (res) => {
         // 将loading移除
-        this.loading?.close()
-
+        // eslint-disable-next-line no-unused-expressions
+        this.loading?.clear()
         const data = res.data
         if (data.returnCode === '-1001') {
           console.log('请求失败~, 错误信息')
@@ -63,6 +59,7 @@ class HYRequest {
       },
       (err) => {
         // 将loading移除
+        // eslint-disable-next-line no-unused-expressions
         this.loading?.close()
 
         // 例子: 判断不同的HttpErrorCode显示不同的错误信息
@@ -74,7 +71,7 @@ class HYRequest {
     )
   }
 
-  request<T = any>(config: HYRequestConfig<T>): Promise<T> {
+  request<T = any> (config: CHRequestConfig<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       // 1.单个请求对请求config的处理
       if (config.interceptors?.requestInterceptor) {
@@ -94,35 +91,47 @@ class HYRequest {
             res = config.interceptors.responseInterceptor(res)
           }
           // 2.将showLoading设置true, 这样不会影响下一个请求
-          this.showLoading = DEAFULT_LOADING
+          this.showLoading = DEFAULT_LOADING
 
           // 3.将结果resolve返回出去
           resolve(res)
         })
         .catch((err) => {
           // 将showLoading设置true, 这样不会影响下一个请求
-          this.showLoading = DEAFULT_LOADING
+          this.showLoading = DEFAULT_LOADING
           reject(err)
           return err
         })
     })
   }
 
-  get<T = any>(config: HYRequestConfig<T>): Promise<T> {
-    return this.request<T>({ ...config, method: 'GET' })
+  get<T = any> (config: CHRequestConfig<T>): Promise<T> {
+    return this.request<T>({
+      ...config,
+      method: 'GET'
+    })
   }
 
-  post<T = any>(config: HYRequestConfig<T>): Promise<T> {
-    return this.request<T>({ ...config, method: 'POST' })
+  post<T = any> (config: CHRequestConfig<T>): Promise<T> {
+    return this.request<T>({
+      ...config,
+      method: 'POST'
+    })
   }
 
-  delete<T = any>(config: HYRequestConfig<T>): Promise<T> {
-    return this.request<T>({ ...config, method: 'DELETE' })
+  delete<T = any> (config: CHRequestConfig<T>): Promise<T> {
+    return this.request<T>({
+      ...config,
+      method: 'DELETE'
+    })
   }
 
-  patch<T = any>(config: HYRequestConfig<T>): Promise<T> {
-    return this.request<T>({ ...config, method: 'PATCH' })
+  patch<T = any> (config: CHRequestConfig<T>): Promise<T> {
+    return this.request<T>({
+      ...config,
+      method: 'PATCH'
+    })
   }
 }
 
-export default HYRequest
+export default CHRequest

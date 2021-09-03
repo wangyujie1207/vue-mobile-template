@@ -1,12 +1,12 @@
 import { reactive } from 'vue'
-import { post } from '@/http/request'
 import { Toast } from 'vant'
 import { ListData } from '@/types/types'
 import { UnwrapRef } from '@vue/reactivity'
+import requestInstance from '@/http'
+import { BaseRequest } from '@/http/request/type'
 
 enum PullTypeEnum {PULL_REFRESH, PULL_UP}
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 function usePullToRefresh<T> (url: string, options = {}, pageSize?: number) {
   const state = reactive({
     list: [] as Array<T>,
@@ -19,10 +19,13 @@ function usePullToRefresh<T> (url: string, options = {}, pageSize?: number) {
   const onLoad = async (pullType?: PullTypeEnum) => {
     const _type = pullType ?? PullTypeEnum.PULL_UP
     state.loading = true
-    const result = await post<ListData<T>>(url, {
-      page: ++state.page,
-      limit: state.pageSize,
-      ...options
+    const result = await requestInstance.post<BaseRequest<ListData<T>>>({
+      url: url,
+      data: {
+        page: ++state.page,
+        limit: state.pageSize,
+        ...options
+      }
     })
     state.loading = false
     if (result.code === 200) {
