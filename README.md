@@ -1,4 +1,4 @@
-# opus-mobile
+# vue3 + ts + vant mobile
 
 ## Project setup
 ```
