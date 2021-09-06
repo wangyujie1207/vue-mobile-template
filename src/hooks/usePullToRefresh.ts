@@ -5,7 +5,7 @@ import { UnwrapRef } from '@vue/reactivity'
 import requestInstance from '@/http'
 import { BaseRequest } from '@/http/request/type'
 
-enum PullTypeEnum {PULL_REFRESH, PULL_UP}
+type PullType = 'refresh'|'load'
 
 function usePullToRefresh<T> (url: string, options = {}, pageSize?: number) {
   const state = reactive({
@@ -16,8 +16,8 @@ function usePullToRefresh<T> (url: string, options = {}, pageSize?: number) {
     pageSize: pageSize ?? 10
   })
 
-  const onLoad = async (pullType?: PullTypeEnum) => {
-    const _type = pullType ?? PullTypeEnum.PULL_UP
+  const onLoad = async (pullType?: PullType) => {
+    const _type = pullType ?? 'load'
     state.loading = true
     const result = await requestInstance.post<BaseRequest<ListData<T>>>({
       url: url,
@@ -34,7 +34,7 @@ function usePullToRefresh<T> (url: string, options = {}, pageSize?: number) {
         state.page = state.page - 1
         state.finished = true
       } else {
-        if (_type === PullTypeEnum.PULL_UP) {
+        if (_type === 'load') {
           state.list = state.list.concat(data as UnwrapRef<Array<T>>)
         } else {
           state.list = data as UnwrapRef<Array<T>>
@@ -53,7 +53,7 @@ function usePullToRefresh<T> (url: string, options = {}, pageSize?: number) {
     state.finished = false
     state.loading = true
     state.page = 0
-    await onLoad(PullTypeEnum.PULL_REFRESH)
+    await onLoad('refresh')
   }
   return {
     state,
