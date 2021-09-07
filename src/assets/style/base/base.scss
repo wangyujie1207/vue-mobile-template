@@ -2,17 +2,12 @@
 @import "../mixin";
 
 body, html {
-  line-height: 1;
+  line-height: 1.5;
   font-family: 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback';
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   background-color: $color_white;
   color: $color_black;
-}
-
-.page {
-  min-height: 100vh;
-  box-sizing: border-box;
 }
 
 .flex {

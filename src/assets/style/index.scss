@@ -1,2 +1,8 @@
 @import "./base/index";
 @import "iconfont";
+@import "vant";
+
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+}
