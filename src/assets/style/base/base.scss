@@ -10,6 +10,10 @@ body, html {
   color: $color_black;
 }
 
+body, html, div {
+  box-sizing: border-box;
+}
+
 .extend-click {
   position: relative;
 
